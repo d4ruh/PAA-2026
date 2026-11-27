@@ -29,6 +29,11 @@ def question_1(palavras: list) -> str:
 	(ex: "abc" antes de "ab" é inconsistente).
 
 	Complexidade exigida: O(C), C = total de caracteres da lista.
+
+	Implementado com ordenação topológica sobre um grafo de letras:
+	cada par de palavras consecutivas gera no máximo uma aresta, então o
+	grafo tem no máximo 26 vértices e 26^2 arestas; percorrer palavras e
+	arestas uma vez custa O(C).
 	"""
 
 	class CharNode:
@@ -119,6 +124,10 @@ def question_2(mapa: list) -> int:
 	em terra para que as duas ilhas formem uma só.
 
 	Complexidade exigida: O(n · m).
+
+	Implementado com duas BFS: a primeira marca a ilha de partida e enfileira
+	sua fronteira de água; a segunda avança camada a camada até a outra ilha.
+	Cada célula entra na fila O(1) vezes, total O(n · m).
 	"""
 	def validar_coord(x, y, n, m):
 		if x<0 or y<0:
@@ -205,6 +214,10 @@ def question_3(altitudes: list) -> tuple:
 	e, entre as trilhas que atingem esse esforço, o menor número de passos.
 
 	Complexidade exigida: O(n · m · log(n · m)) ou melhor.
+
+	Implementado em duas fases: (1) Dijkstra de gargalo com heap mínimo acha
+	o menor esforço E em O(n · m · log(n · m)); (2) BFS no subgrafo das
+	arestas com diferença <= E acha o menor número de passos em O(n · m).
 	"""
 	import heapq
 	from collections import deque
@@ -274,6 +287,10 @@ def question_4(n: int, cotacoes: list) -> list:
 	arbitragem, ou [] se não existir nenhum.
 
 	Complexidade exigida: O(n · m), m = len(cotacoes).
+
+	Implementado com Bellman-Ford em produtos sobre as m cotações: são n
+	iterações de O(m), total O(n · m). Todas as moedas começam com 1.0 (o
+	que equivale a uma super-fonte) e a reconstrução do ciclo custa O(n).
 	"""
 	class MoedaNode:
 		def __init__(self, id: int) -> None:
@@ -363,6 +380,10 @@ def question_5(n: int, ligacoes: list, consultas: list) -> list:
 
 	Complexidade exigida: O(n + q) no total (cada consulta O(1) após o
 	pré-processamento).
+
+	Pré-processamento com DFS iterativa (pilha explícita) que calcula
+	pre_order, pos_order, nível e pai em O(n); depois cada consulta é
+	respondida em O(1), total O(n + q).
 	"""
 	class OrgNode:
 		def __init__(self, id: int) -> None:
@@ -472,6 +493,10 @@ def question_6(pocos: list, canos: list) -> int:
 	Retorna o menor custo total para abastecer todas as casas.
 
 	Complexidade exigida: O((n + m) log n), m = len(canos).
+
+	Implementado com Prim adaptado sobre um heap mínimo com decrease-key: as
+	m arestas passam pelo heap no máximo uma vez, cada operação em O(log n),
+	total O((n + m) log n).
 	"""
 
 	class HeapMin:
@@ -603,6 +628,10 @@ def question_7(relevo: list) -> tuple:
 	(Duas escaladas são distintas se diferem na sequência de células visitadas.)
 
 	Complexidade exigida: O(n · m) ou O(n · m · log(n · m)).
+
+	Implementado com programação dinâmica sobre o DAG implícito (arestas vão
+	sempre para altitude maior) e memoização: cada célula é processada uma
+	vez e olha no máximo 4 vizinhos, total O(n · m).
 	"""
 	def validar_coord(x,y,n,m)->bool: # O(1)
 		if x<0 or y<0:
@@ -727,8 +756,14 @@ def question_8_a(n: int, estradas: list) -> int:
 
 	Retorna o menor número de estradas percorridas (contando repetições).
 
-	RESPONDA AQUI (substitua este texto):
-	Complexidade do seu algoritmo em função de n e do número de estradas: ...
+	Complexidade: O(n^3 + 2^n · n^2 + m) no tempo e O(2^n · n + n^2) no
+	espaço, onde m = len(estradas). O Floyd-Warshall custa O(n^3) e calcula as
+	distâncias mínimas entre todos os pares de povoados; como repetir estradas
+	é permitido, ir de um povoado a outro custa sempre o caminho mais curto.
+	A DP de Held-Karp percorre as 2^n máscaras de povoados visitados e, para
+	cada uma, testa n vértices finais e n próximos destinos, totalizando
+	O(2^n · n^2). Com n <= 12 o termo exponencial domina (~6 · 10^5
+	transições), e m só pesa na montagem da matriz inicial, em O(n^2 + m).
 	"""
 	def floyd_warshall(n, arestas):
 		INF = float('inf')
@@ -790,11 +825,17 @@ def question_8_b():
 	O Carteiro Preguiçoso — item (b) (discursivo, não é corrigido
 	automaticamente).
 
-	RESPONDA AQUI (substitua este texto):
-	(1) Prova de que existe trajeto com exatamente n-1 estradas se e somente se
-		existe caminho hamiltoniano: ...
-	(2) O que isso diz sobre um algoritmo polinomial para o item (a) com n
-		grande (classes de complexidade e redução polinomial): ...
+	(1) Se um trajeto visita os n povoados usando exatamente n-1 estradas, ele
+	tem n-1 arestas para n vértices, como cada estrada liga dois povoados, isso
+	só é possível se nenhum povoado se repetir, ou seja, o trajeto é um caminho
+	simples que passa por todos os vértices: um caminho hamiltoniano.
+	Reciprocamente, um caminho hamiltoniano usa exatamente n-1 estradas e
+	visita todos os povoados, logo é um trajeto válido.
+	(2) Assim, decidir se a resposta do item (a) é n-1 resolve o Problema do
+	Caminho Hamiltoniano, que é NP-completo (Karp); como Caminho Hamiltoniano
+	<=p Carteiro, a versão de otimização é NP-difícil. Portanto, salvo se
+	P = NP, não existe algoritmo polinomial para o item (a) com n grande — e
+	um algoritmo assim provaria P = NP.
 	"""
 	pass
 
@@ -804,9 +845,16 @@ def question_8_c():
 	O Carteiro Preguiçoso — item (c) (discursivo, não é corrigido
 	automaticamente).
 
-	RESPONDA AQUI (substitua este texto):
-	(1) Se a região fosse uma árvore, o problema teria algoritmo polinomial?
-		Descreva um algoritmo O(n): ...
-	(2) Por que isso não contradiz o item (b)? ...
+	(1) Sim. Em uma árvore, o menor passeio que visita todos os vértices
+	(podendo começar e terminar em qualquer lugar) custa 2(n-1) - d, sendo d o
+	diâmetro em arestas: percorrer cada aresta duas vezes dá um passeio de
+	2(n-1) estradas, e escolher início e fim nos extremos do caminho mais longo
+	economiza as d arestas desse caminho. O algoritmo é O(n): uma BFS/DFS a
+	partir de qualquer vértice acha o mais distante u; outra a partir de u acha
+	o mais distante v, e d = dist(u,v).
+	(2) Não contradiz (b) porque a NP-dificuldade é um enunciado de pior caso
+	sobre todos os grafos: restringir a entrada a árvores torna o problema
+	tratável, e nelas o caminho hamiltoniano é trivial (só existe se a árvore
+	for um caminho, isto é, grau máximo <= 2).
 	"""
 	pass
